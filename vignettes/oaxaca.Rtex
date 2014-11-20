@@ -1,0 +1,499 @@
+\documentclass[nojss]{jss}
+%\VignetteIndexEntry{oaxaca}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% declarations for jss.cls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% almost as usual
+\author{Marek Hlavac\\Harvard University}
+\title{\pkg{oaxaca}: Blinder-Oaxaca Decomposition in \proglang{R}}
+
+%% for pretty printing and a nice hypersummary also set:
+\Plainauthor{Marek Hlavac} %% comma-separated
+\Plaintitle{oaxaca: Blinder-Oaxaca Decomposition in R} %% without formatting
+\Shorttitle{\pkg{oaxaca}: Blinder-Oaxaca Decomposition in \proglang{R}} %% a short title (if necessary)
+
+%% an abstract and keywords
+\Abstract{
+This article introduces the \proglang{R} package \pkg{oaxaca} to perform the Blinder-Oaxaca decomposition, a statistical method that decomposes the gap in mean outcomes across two groups into a portion that is due to differences in group characteristics and a portion that cannot be explained by such differences. Although this method has been most widely used to study gender- and race-based discrimination in the labor market, Blinder-Oaxaca decompositions can be applied to explain differences in any continuous outcome across any two groups. The \pkg{oaxaca} package implements all the most commonly used variants of the Blinder-Oaxaca decomposition for linear regression models, calculates bootstrapped standard errors for its estimates, and allows users to visualize the decomposition results.
+}
+\Keywords{Blinder-Oaxaca decomposition, linear regression models, \proglang{R}}
+\Plainkeywords{e, robustness, sensitivity, regression, R} %% without formatting
+%% at least one keyword must be supplied
+
+%% publication information
+%% NOTE: Typically, this can be left commented and will be filled out by the technical editor
+%% \Volume{50}
+%% \Issue{9}
+%% \Month{June}
+%% \Year{2012}
+%% \Submitdate{2012-06-04}
+%% \Acceptdate{2012-06-04}
+
+%% The address of (at least) one author should be given
+%% in the following format:
+\Address{
+  Marek Hlavac\\
+  Harvard University\\
+  John F. Kennedy School of Government\\
+  79 John F. Kennedy Street\\
+  Cambridge, MA 02138\\  
+  United States of America\\
+  E-mail: \email{hlavac@fas.harvard.edu}\\
+}
+%% It is also possible to add a telephone and fax number
+%% before the e-mail in the following format:
+%% Telephone: +43/512/507-7103
+%% Fax: +43/512/507-2851
+
+%% for those who use Sweave please include the following line (with % symbols):
+%% need no \usepackage{Sweave.sty}
+\usepackage{amssymb,amsmath}
+\usepackage{graphics}
+
+%% end of declarations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+%% include your article here, just as usual
+%% Note that you should use the \pkg{}, \proglang{} and \code{} commands.
+\section{Introduction}
+\label{Section1}
+
+In this article, I introduce the \proglang{R} package \pkg{oaxaca} to estimate Blinder-Oaxaca decompositions for linear regression models. The Blinder-Oaxaca decomposition is a statistical method that decomposes differences in mean outcomes across two groups into a part that is due to group differences in the levels of explanatory variables and a part that is due to differential magnitudes of regression coefficients.
+
+
+The Blinder-Oaxaca decomposition originated and has been widely used in the study of labor market discrimination \citep{Blinder1973, Oaxaca1973}. Economists and sociologists have, for instance, used it to decompose wage and earnings differences based on gender \citep[e.g.,][]{Stanley1998, Weichselbaumer2005} and race \citep[e.g.,][]{Darity1996, Kim2010}. Although Blinder-Oaxaca decompositions have been a mainstay of empirical research on discrimination, they can be, in principle, applied to explain differences in any continuous outcome across any two groups. Researchers have, for instance, used it to examine the assimilation of immigrants \citep{LaLondeTopel1992}, school enrolment rates \citep{BorooahIyer2005}, health insurance coverage \citep{Bustamante2009}, the prevalence of smoking \citep{BauerGohlmann2007}, or even local hunting lease rates \citep{MunnHussain2010}. 
+
+Several software implementations of the Blinder-Oaxaca decomposition are already available. These include modules \pkg{oaxaca} \citep{Jann2008}, \pkg{decomp} \citep{Watson2010} for \proglang{Stata} \citep{Stata} that estimate the decomposition for linear regression models, as well as \proglang{Stata} modules \pkg{fairlie} \citep{Jann2006} and \pkg{nldecompose} \citep{SinningHahnBauer2008} that implement the decomposition for a large variety of non-linear models using methods proposed in \citet{Fairlie2005}, \citet{BauerSinning2008} and \citet{BauerSinning2010}. A \proglang{SAS} \citep{SAS} implementation of the Blinder-Oaxaca decomposition for non-linear models is also available \citep{Fairlie2013}.
+
+The \pkg{oaxaca} package is the first Blinder-Oaxaca decomposition package for the \proglang{R} statistical programming language \citep{R}. It implements several types of the decomposition for linear regression models, and obtains point estimates of all decomposition components using the same estimation procedures as the \proglang{Stata} module \pkg{oaxaca} \citep{Jann2008}. Standard errors are calculated using a non-parametric bootstrapping approach \citep{Efron1979}. Unlike any other existing software implementation of the Blinder-Oaxaca decomposition, \pkg{oaxaca} enables users to generate elegant bar graph visualizations of all decomposition results.
+
+The package is available free of charge, and can be installed from the \citet{CRAN} in the usual way:
+ 
+\begin{CodeInput}
+R> install.packages("oaxaca")
+\end{CodeInput}
+
+In the next section, I give a brief description of the Blinder-Oaxaca decomposition method. I then provide an overview of the \pkg{oaxaca} package's features in Section~\ref{Section3}. In Section~\ref{Section4}, I showcase them on an empirical example that examines the wage gap between native and foreign-born Hispanic workers in metropolitan Chicago. Section~\ref{Section5} concludes.
+
+\section[Blinder-Oaxaca decomposition]{Blinder-Oaxaca decomposition}
+\label{Section2}
+
+This section provides an overview of the Blinder-Oaxaca decomposition.  It is by no means intended to be exhaustive, and primarily aims to give readers an understanding of the estimation procedures that the \pkg{oaxaca} package implements. Readers who are interested in a more comprehensive and rigorous treatment of the statistical method can refer to the excellent overview in \citet{Jann2008}, whose notation I follow with only a few minor adjustments.
+
+The aim of the Blinder-Oaxaca decomposition is to explain how much of the difference in mean outcomes across two groups is due to group differences in the levels of explanatory variables, and how much is due to differences in the magnitude of regression coefficients \citep{Oaxaca1973, Blinder1973}. I will label the two groups as Group A and Group B. The mean outcome difference to be explained ($\Delta \bar{Y}$) is simply the difference of the mean outcomes for observations in Group A and Group B, denoted as $\bar{Y}_{A}$ and $\bar{Y}_{B}$, respectively:
+
+\begin{equation}\label{differential}
+\Delta \bar{Y} = \bar{Y}_{A} - \bar{Y}_{B}
+\end{equation}
+
+\subsection[Threefold decomposition]{Threefold decomposition}
+In the context of a linear regression, the mean outcome for Group $G \in \{A, B\}$ can be expressed as $\bar{Y}_{G} = \boldsymbol{\bar{X}}_{G}'\boldsymbol{\hat{\beta}}_{G}$, where $\boldsymbol{\bar{X}}_{G}$ contains the mean values of explanatory variables and $\boldsymbol{\hat{\beta}}_{G}$ are the estimated regression coefficients. Hence, $\Delta \bar{Y}$ can be rewritten as:
+
+\begin{equation}\label{differential_2}
+\Delta \bar{Y} = \boldsymbol{\bar{X}}_{A}'\boldsymbol{\hat{\beta}}_{A} - \boldsymbol{\bar{X}}_{B}'\boldsymbol{\hat{\beta}}_{B}
+\end{equation}
+
+This expression can, in turn, be written as the sum of the following three terms:
+
+\begin{equation}\label{threefold}
+\Delta \bar{Y} = \underbrace{(\boldsymbol{\bar{X}}_{A} - \boldsymbol{\bar{X}}_{B})'  \boldsymbol{\hat{\beta}}_{B}}_\text{endowments} + \underbrace{\boldsymbol{\bar{X}}_{B}' (\boldsymbol{\hat{\beta}}_{A} - \boldsymbol{\hat{\beta}}_{B})}_\text{coefficients} + \underbrace{(\boldsymbol{\bar{X}}_{A} - \boldsymbol{\bar{X}}_{B})' (\boldsymbol{\hat{\beta}}_{A} - \boldsymbol{\hat{\beta}}_{B})}_\text{interaction}
+\end{equation}
+
+Equation~\ref{threefold} is the threefold Blinder-Oaxaca decomposition of the mean outcome difference. The endowments term represents the contribution of differences in explanatory variables across groups, and the coefficients term is the part that is due to group differences in the coefficients. Finally, the interaction term accounts for the fact that cross-group differences in explanatory variables and coefficients can occur at the same time.
+
+The threefold decomposition can also be estimated separately for each explanatory variable:
+
+\begin{equation}\label{endowments}
+\underbrace{(\boldsymbol{\bar{X}}_{A} - \boldsymbol{\bar{X}}_{B})'  \boldsymbol{\hat{\beta}}_{B}}_\text{endowments} = \underbrace{(\bar{X}_{1A} - \bar{X}_{1B})  \hat{\beta}_{1B}}_\text{variable 1} + \underbrace{(\bar{X}_{2A} - \bar{X}_{2B})  \hat{\beta}_{2B}}_\text{variable 2} + \dots
+\end{equation}
+
+\begin{equation}\label{coefficients}
+\underbrace{\boldsymbol{\bar{X}}_{B}' (\boldsymbol{\hat{\beta}}_{A} - \boldsymbol{\hat{\beta}}_{B})}_\text{coefficients} = \underbrace{\bar{X}_{1B} (\hat{\beta}_{1A} - \hat{\beta}_{1B})}_\text{variable 1} + \underbrace{\bar{X}_{2B} (\hat{\beta}_{2A} - \hat{\beta}_{2B})}_\text{variable 2} + \dots
+\end{equation}
+
+\begin{equation}\label{interaction}
+\underbrace{(\boldsymbol{\bar{X}}_{A} - \boldsymbol{\bar{X}}_{B})' (\boldsymbol{\hat{\beta}}_{A} - \boldsymbol{\hat{\beta}}_{B})}_\text{interaction} = \underbrace{(\bar{X}_{1A} - \bar{X}_{1B}) (\hat{\beta}_{1A} - \hat{\beta}_{1B})}_\text{variable 1} + \underbrace{(\bar{X}_{2A} - \bar{X}_{2B}) (\hat{\beta}_{2A} - \hat{\beta}_{2B})}_\text{variable 2} + \dots
+\end{equation}
+
+\subsection[Twofold decomposition]{Twofold decomposition}
+
+Alternatively, one can estimate a twofold Blinder-Oaxaca decomposition. The twofold approach decomposes the mean outcome difference with respect to a vector of reference coefficients $\boldsymbol{\hat{\beta}}_{R}$. In the research literature on labor market discrimination, the reference coefficient vector has typically been interpreted to be non-discriminatory -- in other words, as the set of regression coefficients that would emerge in a world of no labor market discrimination. 
+
+\begin{equation}\label{twofoldeq}
+\Delta \bar{Y} = \underbrace{(\boldsymbol{\bar{X}}_{A} - \boldsymbol{\bar{X}}_{B})'  \boldsymbol{\hat{\beta}}_{R}}_\text{explained} + \underbrace{\underbrace{\boldsymbol{\bar{X}}_{A}' (\boldsymbol{\hat{\beta}}_{A} - \boldsymbol{\hat{\beta}}_{R})}_\text{unexplained A} + \underbrace{\boldsymbol{\bar{X}}_{B}' (\boldsymbol{\hat{\beta}}_{R} - \boldsymbol{\hat{\beta}}_{B})}_\text{unexplained B}}_\text{unexplained}
+\end{equation}
+
+As Equation~\ref{twofoldeq} shows, the twofold decomposition divides the difference in mean outcomes into a portion that is explained by cross-group differences in the explanatory variables, and a part that remains unexplained by these differences. 
+
+The unexplained portion of the mean outcome gap has often been attributed to discrimination, but may also result from the influence of unobserved variables. It can be further decomposed into two sub-components, labeled ``unexplained A'' and ``unexplained B'' above. If one interprets the reference coefficient vector to be non-discriminatory, these sub-components measure the part of the mean difference in outcomes that originates from discrimination in favor of Group A and the part that comes from discrimination against Group B, respectively.
+
+Again, a detailed, variable-by-variable decomposition can also be estimated:
+
+\begin{equation}\label{explained}
+\underbrace{(\boldsymbol{\bar{X}}_{A} - \boldsymbol{\bar{X}}_{B})'  \boldsymbol{\hat{\beta}}_{R}}_\text{explained} = \underbrace{(\bar{X}_{1A} - \bar{X}_{1B})  \hat{\beta}_{1R}}_\text{variable 1} + \underbrace{(\bar{X}_{2A} - \bar{X}_{2B})  \hat{\beta}_{2R}}_\text{variable 2} + \dots
+\end{equation}
+
+\begin{equation}\label{unexplained_A}
+\underbrace{\boldsymbol{\bar{X}}_{A}' (\boldsymbol{\hat{\beta}}_{A} - \boldsymbol{\hat{\beta}}_{R})}_\text{unexplained A} = \underbrace{\bar{X}_{1A} (\hat{\beta}_{1A} - \hat{\beta}_{1R})}_\text{variable 1} + \underbrace{\bar{X}_{2A} (\hat{\beta}_{2A} - \hat{\beta}_{2R})}_\text{variable 2} + \dots
+\end{equation}
+
+\begin{equation}\label{unexplained_B}
+\underbrace{\boldsymbol{\bar{X}}_{B}' (\boldsymbol{\hat{\beta}}_{R} - \boldsymbol{\hat{\beta}}_{B})}_\text{unexplained B} =  \underbrace{\bar{X}_{2B} (\hat{\beta}_{2R} - \hat{\beta}_{2B})}_\text{variable 1} + \underbrace{\bar{X}_{2B} (\hat{\beta}_{2R} - \hat{\beta}_{2B})}_\text{variable 2} + \dots
+\end{equation}
+
+The choice of the reference coefficients is generally up to the researcher. In the literature on labor market discrimination, it is often assumed that only one of the two groups faces discrimination - for instance, that only women or members of ethnic minorities are discriminated against. In such cases, the reference coefficients will simply be the coefficients from a regression on observations from one of the groups: either $\boldsymbol{\hat{\beta}}_{R} = \boldsymbol{\hat{\beta}}_{A}$ or $\boldsymbol{\hat{\beta}}_{R} = \boldsymbol{\hat{\beta}}_{B}$.
+
+Some researchers have instead used a weighted average of $\boldsymbol{\hat{\beta}}_{A}$ and $\boldsymbol{\hat{\beta}}_{B}$ as the set of reference coefficients. \citet{Reimers1983}, for example, proposes giving equal weight to coefficients from regressions on Group A and Group B observations:
+
+\begin{equation}\label{reimers}
+\boldsymbol{\hat{\beta}}_{R} = 0.5\boldsymbol{\hat{\beta}}_{A} + 0.5\boldsymbol{\hat{\beta}}_{B}
+\end{equation}
+
+\citet{Cotton1988} suggests weighting the coefficients by the proportion of observations in the corresponding group:
+
+\begin{equation}\label{cotton}
+\boldsymbol{\hat{\beta}}_{R} = \frac{n_{A}}{n_{A}+n_{B}}\boldsymbol{\hat{\beta}}_{A} + \frac{n_{B}}{n_{A}+n_{B}}\boldsymbol{\hat{\beta}}_{B}
+\end{equation}
+
+Others still have advocated the use of coefficient estimates from a regression that pools observations from both Groups A and B, and includes \citep{Jann2008} or does not include \citep{Neumark1988} the group indicator variable as an additional regressor. The \pkg{oaxaca} package estimates results for all of the aforementioned choices of $\boldsymbol{\hat{\beta}}_{R}$, and also enables users to specify their own custom weights for $\boldsymbol{\hat{\beta}}_{A}$ and $\boldsymbol{\hat{\beta}}_{B}$ to construct a weighted average-based set of reference coefficients.
+
+\subsection[Sensitivity to the choice of omitted baseline category]{Sensitivity to the choice of omitted baseline category}
+
+The results of Blinder-Oaxaca decompositions have been found to be sensitive to the researcher's choice of the omitted baseline category when categorical variables are included as covariates \citep{OaxacaRansom1999}. Typically, categorical explanatory variables are introduced as a set of indicator (``dummy'') variables on the right hand side. To avoid perfect multicollinearity, one of the dummy variables is usually omitted, and represents the baseline category. The coefficients on the remaining dummy variables are then interpreted as deviations from this omitted baseline. A linear regression model that contains a categorical explanatory variable may thus have the following general form:
+
+\begin{equation}\label{adjust}
+Y = \beta_{0} + \beta_{1}D_{1} + \beta_{2}D_{2} + \beta_{3}D_{3} + \dots + \beta_{k-1}D_{k-1} + \boldsymbol{X}'\boldsymbol{\gamma} + \epsilon
+\end{equation}
+
+where $D_{i}$, such that $i = 1, \dots, k-1$, are indicator variables that represent individual levels of a categorical variable. Category $k$ is the omitted baseline. 
+
+To ensure that the Blinder-Oaxaca decomposition results are invariant to the user's choice of the omitted baseline category, \pkg{oaxaca} implements a procedure proposed by \citet{GardeazabalUgidos2004}. More specifically, the package transforms the above regression model into:
+
+\begin{equation}\label{adjust}
+Y = \tilde{\beta}_{0} + \tilde{\beta}_{1}D_{1} + \tilde{\beta}_{2}D_{2} + \tilde{\beta}_{3}D_{3} + \dots + \tilde{\beta}_{k-1}D_{k-1} + \tilde{\beta}_{k}D_{k} + \boldsymbol{X}'\boldsymbol{\gamma} + \epsilon
+\end{equation}
+
+where the new regression coefficients on the indicator variables are calculated by adding or subtracting an adjustment amount $a$ to the original coefficients. The adjustment amount $a$ is simply the sum of the original dummy coefficients $\boldsymbol{\beta}$ divided by $k$, the total number of categories: 
+
+\begin{equation}
+a = \frac{\sum\limits_{j=1}^{k-1} \beta_{j}}{k}
+\end{equation}
+
+The adjustment amount is then added to the original intercept $\beta_{0}$:
+
+\begin{equation}
+\tilde{\beta}_{0} = \beta_{0} + a
+\end{equation}
+
+and subtracted from each of the other regression coefficients:
+
+\begin{equation}
+\tilde{\beta}_{i} = \beta_{i} - a
+\end{equation}
+
+for $i = 1, \dots, k$. The adjusted coefficients ($\boldsymbol{\tilde{\beta}}$), as well as the results of detailed variable-by-variable Blinder-Oaxaca decompositions, will remain the same regardless of the researcher's choice of the omitted category $k$.
+
+
+\subsection[Estimation uncertainty]{Estimation uncertainty}
+
+The \pkg{oaxaca} package provides a measure of the estimation uncertainty that accompanies each of its decomposition estimates. In particular, it reports bootstrapped standard errors based on a user-specified number ($R$) of sampling replicates \citep{Efron1979}. The package uses the following procedures to calculate standard errors:
+
+\begin{enumerate}
+\item $R$ resamples are randomly sampled with replacement from the relevant set of observations.
+\item Decomposition estimates are calculated for each of the $R$ resamples from Step 1.
+\item The bootstrapped standard error is the standard deviation of the $R$ decomposition estimates from Step 2.
+\end{enumerate}
+
+\newpage
+\section[Overview of the oaxaca Package]{Overview of the \pkg{oaxaca} package}
+\label{Section3}
+The \pkg{oaxaca} package consists of the main function \code{oaxaca()}, which performs the Blinder-Oaxaca decompositions, as well as of a related \code{plot()} method that produces a bar graph visualization of the decomposition results. In this section, I offer a brief overview of these functions' capabilities. A more detailed description of the arguments and output of both functions can be obtained by typing \code{?oaxaca} or \code{?plot.oaxaca} into the \proglang{R} console. 
+
+\subsection[Decomposition estimation: Main function oaxaca()]{Decomposition estimation: Main function \code{oaxaca()}}
+
+The main function \code{oaxaca()} performs both the threefold and the twofold variants of the Blinder-Oaxaca decomposition using observations from the data frame provided in the \code{data} argument. The linear regression model for the Blinder-Oaxaca decomposition is specified through the \code{formula} argument. Users can pass on a multiple-part formula that specifies the dependent variable (\code{y}), the explanatory variables (\code{x1}, \code{x2}, \code{x3}, etc.), as well as an indicator variable (\code{z}) that indicates whether an observation belongs to Group A (when \code{z} equals \code{FALSE} or \code{0}) or Group B (when it equals \code{TRUE} or \code{1}). These variables, along with the functional form of the model, are passed on to the \code{formula} argument in an object of class \code{"Formula"} from the \pkg{Formula} package \citep{ZeileisCroissant2010}.
+
+Typically, the model formula takes the following form:
+
+\begin{center}
+\code{y ~ x1 + x2 + x3 + ... | z}
+\end{center}
+
+If the regression model contains dummies that represent a categorical variable (\code{d1}, \code{d2}, \code{d3}, etc.), these can be specified by adding another part to the formula: 
+
+\begin{center}
+\code{y ~ x1 + x2 + x3 + ... | z | d1 + d2 + d3 + ...}
+\end{center}
+
+When categorical variable dummies are specified, the \code{oaxaca()} function will automatically adjust estimates to be invariant with respect to the user's choice of the omitted baseline category.
+
+If the user does not include any other arguments, \code{oaxaca()} will estimate the Blinder-Oaxaca decompositions -- both threefold and twofold -- based on Ordinary Least Squares regressions (estimated via the standard \code{lm()} function), and will calculate standard errors based on 100 bootstrapping replicates. By default, \code{oaxaca()} estimates the twofold decomposition with Group A coefficients, Group B coefficients, their equally weighted average \citep{Reimers1983}, a weighted average that reflects the number of observations in Groups A and B \citep{Cotton1988}, as well with pooled coefficients -- both including and excluding the group indicator variable \citep{Neumark1988, Jann2008} -- as the set of reference coefficients.
+
+These defaults can, however, easily be changed. Users can use the argument \code{weights} to specify additional relative weights of Group A and Group B coefficients in the estimation of the twofold decomposition. They can also choose, via the \code{R} argument, how many bootstrapping resamples should be drawn to calculate the standard errors. Last but not least, users can use a difference regression function (argument \code{reg.fun}) to estimate the regression coefficients used in the decompositions. Note that, if a non-linear function such as \code{glm()} is chosen, the decomposition will be based on the linear systematic component -- usually associated with the estimation of the corresponding latent variable -- of the regression method.
+
+The function \code{oaxaca()} returns an object of class \code{"oaxaca"}, which can then be passed on to the \code{plot()} method to obtain a bar graph visualization of the Blinder-Oaxaca decomposition results. The object contains lists named \code{threefold} and \code{twofold} which contain the results of the threefold and twofold decompositions, respectively. In addition, the object stores the regression coefficients used in the decomposition (component \code{beta}), the number of observations in each group that were used in the analysis (\code{n}), the number of bootstrapping replicates (\code{R}), the regression objects generated during the analysis (\code{reg}), as well as the mean values of both the dependent variable (\code{y}) and the explanatory variables (\code{x}).
+
+\subsection[Visualization: Method plot()]{Visualization: Method \code{plot()}}
+
+The \pkg{oaxaca} package can produce easily customizable bar charts that visually summarize the results of its Blinder-Oaxaca decompositions. All bar charts are generated using the \pkg{ggplot2} package \citep{Wickham2009}. To visualize the decomposition results, the user simply passes an \code{"oaxaca"}-class object created by the main function \code{oaxaca()} to the \code{plot()} method. 
+
+Users can choose which of the estimated decompositions to visualize. The \code{decomposition} argument determines whether a threefold or a twofold Blinder-Oaxaca decomposition will be shown, while the \code{type} argument specifies whether the bar graph will contain an overall decomposition or a detailed, variable-by-variable one. If the detailed decomposition type is selected, \code{component.left} determines whether decomposition components or variable names will be aligned along the left side of the graph. The argument \code{weight} allows the user to select which of the twofold decompositions should be shown, and the \code{unexplained.split} argument determines whether the unexplained components ought to be split into the two discrimination subcomponents (``unexplained A'' and ``unexplained B''). 
+
+Users can, furthermore, choose which of the variables and decomposition components will be shown (arguments \code{variables} and \code{components}), as well as their labels (\code{variable.labels} and \code{component.labels}). Standard error bars that indicate confidence intervals can be toggled by the \code{ci} argument, and the confidence level adjusted by \code{ci.level}. Several formatting options are available. The bar graph's title can be set using the \code{title} argument, and axes can be labeled by \code{xlab} and \code{ylab}. Finally, users can change the colors of the bars by specifying the \code{bar.color} argument. 
+
+\section[Example: Wages of native and foreign-born workers]{Example: Wages of native and foreign-born workers}
+\label{Section4}
+
+In this section, I use an empirical example to demonstrate the capabilities of the \pkg{oaxaca} package. In particular, I use the Blinder-Oaxaca decomposition to explain the wage gap between native and foreign-born Hispanic workers in metropolitan Chicago. I analyze data from the \code{chicago} data frame, included in the \pkg{oaxaca} package:
+
+\begin{CodeInput}
+R> data("chicago")
+\end{CodeInput}
+
+The \code{chicago} data frame contains information about the demographic characteristics and labor market outcomes of 712 employed Hispanic workers in the Chicago metropolitan area. It is a subset of the 2013 Current Population Survey (CPS) Outgoing Rotation Groups (ORG) data set \citep{cepr2014}. These data have been used extensively in labor economics research \citep[e.g.,][]{HolzerHlavac2014}.
+
+I am interested in decomposing the wage gap between native and foreign-born workers. The wage gap could be due to group differences in the level of wage determinants such as age, gender or education. Alternatively, the gap could arise from a differential effect of these determinants on native and immigrant workers' wages. I call the \code{oaxaca()} function to estimate the relative magnitudes of these channels' influence:
+
+\begin{CodeInput}
+R> results <- oaxaca(formula = real.wage ~ age + female + 
++                    LTHS + some.college + college + 
++                    advanced.degree | foreign.born |
++                    LTHS + some.college + college + 
++                    advanced.degree, data = chicago, R = 1000) 
+\end{CodeInput}
+
+As the \code{formula} argument indicates, the outcome variable in this decomposition is \code{real.wage}, the worker's real wage denominated in 2013 U.S. dollars. The values of the dependent variable had been obtained by exponentiating the natural logarithm of the workers' real wages (contained in the provided \code{ln.real.wage} variable):
+
+\begin{CodeInput}
+R> chicago$real.wage <- exp(chicago$ln.real.wage)
+\end{CodeInput}
+
+The linear regression model includes covariates that account for the workers' age, gender and education. \code{LTHS} (``less than high school''), \code{some.college}, \code{college} and \code{advanced.degree} are indicator variables that denote the highest level of education an individual has achieved. A high school education is the omitted baseline category. The variable \code{foreign.born} indicates whether a worker was born outside of the United States. Group A consists of native workers, and Group B of foreign-born ones. To make sure that the choice of the omitted baseline does not affect the decomposition estimates, the \code{formula} argument also specifies that the categorical variables denoting the education level ought to be adjusted. Bootstrapped standard errors are calculated based on 1,000 replicates.
+
+\begin{CodeInput}
+R> results$n
+\end{CodeInput}
+
+\begin{CodeOutput}
+$n.A
+[1] 287
+
+$n.B
+[1] 379
+
+$n.pooled
+[1] 666
+\end{CodeOutput}
+
+The \code{n} component of the resulting \code{"oaxaca"}-class object indicates that there are $n_{A} = 287$ native and $n_{B} = 379$ foreign-born workers in the analyzed sample. The pooled analysis contains \mbox{$n_{A} + n_{B} = 666$} observations.
+
+\newpage
+\begin{CodeInput}
+R> results$y
+\end{CodeInput}
+
+\begin{CodeOutput}
+$y.A
+[1] 17.58282
+
+$y.B
+[1] 14.56725
+
+$y.diff
+[1] 3.015574
+\end{CodeOutput}
+
+The \code{y} component of the resulting \code{"oaxaca"}-class object indicates that the mean real wage is \$17.58 for the natives (Group A) and \$14.57 for foreign-born workers, leaving the difference of approximately \$3.02 to be explained by the Blinder-Oaxaca decomposition.
+
+\subsection[Threefold decomposition]{Threefold decomposition}
+
+First, I look at the results of the threefold Blinder-Oaxaca decomposition: 
+
+\begin{CodeInput}
+R> results$threefold$overall
+\end{CodeInput}
+
+\begin{CodeOutput}
+coef(endowments)     se(endowments) coef(coefficients)   se(coefficients)   
+       1.6165339          0.6565025          2.8333261          0.8936198        
+      
+coef(interaction)    se(interaction)
+      -1.4342857         0.7953771
+\end{CodeOutput}
+ 
+The results of the threefold decomposition suggest that, of the \$3.02 difference, approximately \$1.62 can be attributed to group differences in endowments (i.e., age, gender, education), \$2.83 to differences in coefficients, and the remaining -\$1.43 is accounted for by the interaction of the two. Next, I examine the endowments and coefficients components of the threefold decomposition variable by variable. This is most easily done by using the \code{plot()} method:
+
+\begin{CodeInput}
+R> plot(results, components = c("endowments","coefficients"))
+\end{CodeInput}
+
+Figure~\ref{FigThreefold} shows the estimation results for each variable, along with error bars that indicate 95\% confidence intervals. In the endowments component, most variables appear to have a statistically insignificant (or only marginally significant) influence, with the sole exception of \code{LTHS}. It seems that a significant portion of the native-immigrant wage gap is driven by group differences in the proportion of individuals with less than a high school education.
+
+\begin{figure}[htp!]
+	\centering
+	\includegraphics[width=0.98\textwidth]{figure1.pdf}
+	\caption{The endowments and coefficients components of a threefold Blinder-Oaxaca decomposition of the native vs. immigrant wage gap.}
+	\label{FigThreefold}
+\end{figure}
+
+\begin{CodeInput}
+R> summary(results$reg$reg.pooled.2)$coefficients["LTHS",]
+\end{CodeInput}
+
+\begin{CodeOutput}
+   Estimate  Std. Error     t value    Pr(>|t|) 
+-2.86539843  0.89467794 -3.20271499  0.00142703
+\end{CodeOutput}
+
+\newpage
+\begin{CodeInput}
+R> results$x$x.mean.diff["LTHS"]
+\end{CodeInput}
+
+\begin{CodeOutput}
+      LTHS 
+-0.2693959
+\end{CodeOutput}
+
+Individuals with less human capital tend to earn less, as can be seen from the pooled regression coefficient on \code{LTHS} reported above. Furthermore, the value of \code{x.mean.diff} shows that a greater proportion of foreign-born Hispanic workers have not attained a high school education. The difference in the educational composition of native and immigrant worker groups thus accounts for some portion of the natives' higher wages.
+
+Similarly, most variables are either insignificant or exhibit only marginal statistical significance in the coefficients component. The only variable which achieves clear statistical significance is \code{age}.
+
+\begin{CodeInput}
+R> results$beta$beta.diff["age"]
+\end{CodeInput}
+
+\begin{CodeOutput}
+      age 
+0.1860063
+\end{CodeOutput}
+
+As the difference in the \code{age} coefficients between natives and immigrants shows, the wage payoff of an additional year of age is greater for U.S.-born Hispanic workers by almost 19 cents. As Figure~\ref{FigThreefold} makes clear, differences in the regression coefficients on \code{age} account for the decisive portion of the wage gap.
+
+\subsection[Twofold decomposition]{Twofold decomposition}
+Next, I look at the results of the twofold Blinder-Oaxaca decomposition. In the output below, the \code{weight} column indicates the relative weights of coefficients from a regression on observations from Groups A and B, respectively, in the reference coefficient vector $\boldsymbol{\hat{\beta}}_{R}$. The two negative weights indicate that the reference coefficients come from pooled regressions either without (\code{-1}) or with (\code{-2}) the group indicator variable included as a covariate.
+
+\begin{CodeInput}
+R> results$twofold$overall
+\end{CodeInput}
+
+\begin{CodeOutput}
+         weight coef(explained) se(explained) coef(unexplained) se(unexplained)
+[1,]  0.0000000       1.6165339     0.6565025          1.399040       0.9415643
+[2,]  1.0000000       0.1822482     0.7126499          2.833326       0.8936198
+[3,]  0.5000000       0.8993911     0.5579216          2.116183       0.8272809
+[4,]  0.5800562       0.7845676     0.5669967          2.231007       0.8254721
+[5,] -1.0000000       1.3557222     0.5059496          1.659852       0.6589794
+[6,] -2.0000000       0.9525717     0.5220180          2.063003       0.8269841
+     coef(unexplained A) se(unexplained A) coef(unexplained B) se(unexplained B)
+[1,]        1.399040e+00      9.415643e-01           0.0000000         0.0000000
+[2,]        0.000000e+00      0.000000e+00           2.8333261         0.8936198
+[3,]        6.995202e-01      4.707821e-01           1.4166630         0.4468099
+[4,]        5.875183e-01      3.954041e-01           1.6434883         0.5183497
+[5,]        9.445705e-01      3.763768e-01           0.7152816         0.2858236
+[6,]        4.490852e-14      3.801248e-14           2.0630026         0.8269841
+\end{CodeOutput}
+
+For presentational ease, I focus my discussion on the \citet{Neumark1988} decomposition, which uses pooled regression coefficients (from a regression that does not include the group indicator variable \code{foreign.born}) as the reference coefficient set. The Neumark decomposition is denoted by \code{-1} in the \code{weights} column. The results of the overall twofold decomposition indicate that the \$3.02 wage gap between native and foreign-born Hispanic workers can be decomposed into \$1.36 that can be explained by group differences in the explanatory variables and \$1.66 that is unexplained. 
+
+Let us assume that the unexplained component of the wage gap occurs due to labor market discrimination, and that the pooled regression coefficients are non-discriminatory.  The Blinder-Oaxaca decomposition would then also indicate that \$0.94 of the unexplained part originates from discrimination in favor of native Hispanic workers (component \code{"unexplained A"}), while \$0.72 comes from discrimination against those who are born outside of the United States (component \code{"unexplained B"}). The standard errors provide a sense of the uncertainty that accompanies all of the point estimates.
+
+\begin{CodeInput}
+R> plot(results, decomposition = "twofold", weight = -1)
+\end{CodeInput}
+
+Figure~\ref{FigTwofold} provides a variable-by-variable twofold decomposition. The results are consistent with the threefold composition. It appears that the wage gap is driven largely by the lower proportion of workers with less than a high school education among the natives (in the explained component) and by the native workers' greater returns to age.
+
+\begin{figure}[htp!]
+	\centering
+	\includegraphics[width=0.98\textwidth]{figure2.pdf}
+	\caption{The explained and unexplained components of a twofold Blinder-Oaxaca decomposition of the native vs. immigrant wage gap.}
+	\label{FigTwofold}
+\end{figure}
+
+I can explore the unexplained component even further. In Figure~\ref{FigTwofoldSplit}, I examine three variables from the decomposition -- \code{age}, \code{female} and \code{college} -- and visualize how much of the unexplained portion of the wage gap can be attributed to discrimination in favor of the natives, and how much is due to discrimination against the immigrants.
+
+\begin{CodeInput}
+R> plot(results, decomposition = "twofold", weight = -1,
++       unexplained.split = TRUE,
++       components = c("unexplained A", "unexplained B"),
++       component.labels = c("unexplained A" = "In Favor of Natives",
++                            "unexplained B" = "Against the Foreign-Born"),
++       variables = c("age", "female", "college"),
++       variable.labels = c("age" = "Years of Age", "female" = "Female",
++                           "college" = "College Education"))
+\end{CodeInput}
+
+I use a variety of \code{plot()} method arguments to customize the formatting of the resulting bar graph. Through the \code{components} and \code{component.labels} arguments, I choose to display only the two subparts -- \code{"unexplained A"} (i.e., discrimination in favor of Group A) and \code{"unexplained B"} (discrimination against Group B) -- of the unexplained decomposition component, and attach appropriate labels to them. Similarly, I use the \code{variables} and \code{variable.labels} arguments to select and label the variables I examine.
+
+\begin{figure}[htp!]
+	\centering
+	\includegraphics[width=0.85\textwidth]{figure3.pdf}
+	\caption{The unexplained portion's discrimination sub-components in a twofold Blinder-Oaxaca decomposition of the native vs. immigrant wage gap.}
+	\label{FigTwofoldSplit}
+\end{figure}
+
+It appears that only the discrimination components for the \code{age} variable (labeled \code{"Years of Age"} in the bar graph) achieve non-marginal statistical significance. The relative size of the bars suggests that -- if we assume that the pooled regression coefficients reflect a state of non-discrimination -- almost twice as much of the wage gap is explained by discrimination against foreign-born workers as it is by discrimination in favor of native ones. 
+
+The comparison would be a little easier to make if the discrimination components bar charts were presented side-by-side for each variable separately. This can be achieved by switching on the \code{component.left} argument in the \code{plot()} method. The resulting bar graph is presented in Figure~\ref{FigTwofoldSplitLeft}.
+
+\begin{CodeInput}
+R> plot(results, decomposition = "twofold", weight = -1,
++       unexplained.split = TRUE,
++       components = c("unexplained A", "unexplained B"),
++       component.labels = c("unexplained A" = "In Favor of Natives",
++                            "unexplained B" = "Against the Foreign-Born"),
++       component.left = TRUE, variables = c("age","female","college"),
++       variable.labels = c("age" = "Years of Age", "female" = "Female",
++                           "college" = "College Education"))
+\end{CodeInput}
+
+
+\begin{figure}[htp!]
+	\centering
+	\includegraphics[width=0.85\textwidth]{figure4.pdf}
+	\caption{The unexplained portion's discrimination sub-components in a twofold Blinder-Oaxaca decomposition of the native vs. immigrant wage gap. An alternative presentation.}
+	\label{FigTwofoldSplitLeft}
+\end{figure}
+
+\newpage
+Specific numerical values of the point estimates of the unexplained discrimination components can, of course, be obtained directly from the \code{"oaxaca"}-class object:
+
+\begin{CodeInput}
+> variables <- c("age", "female", "college")
+> columns <- c("weight", "coef(unexplained A)", "coef(unexplained B)")
+> results$twofold$variables[[5]][variables, columns]
+\end{CodeInput}
+
+\begin{CodeOutput}
+        weight coef(unexplained A) coef(unexplained B)
+age         -1           4.3191008           2.3980443
+female      -1          -0.8285489          -0.4832824
+college     -1           0.3777076           0.3428246
+\end{CodeOutput}
+
+To summarize, I have used the Blinder-Oaxaca decomposition to examine the wage gap between native and foreign-born Hispanic workers in the Chicago metropolitan area. The results of my analysis suggest that much of the gap can be explained by two facts:
+\begin{itemize}
+\item There are more workers with less than a high school education in the foreign-born group. Workers with a lower stock of human capital tend to command lower wages in the labor market. As a result, the relatively less-educated group of foreign-born Hispanic workers will, on average, earn lower wages than their native counterparts.
+\item The returns to age are greater for native workers than for the immigrants. In other words, even if the foreign-born workers had the same average age as the natives, the native group would, on average, earn higher wages than immigrants. This result makes some intuitive sense if we interpret age as potentially picking up the effect of labor market experience. The higher returns to age among the natives may, for instance, reflect the differential availability of more lucrative jobs with greater opportunities for career growth.
+\end{itemize}
+
+\section[Concluding remarks]{Concluding remarks}
+\label{Section5}
+%% Note: If there is markup in \(sub)section, then it has to be escape as above.
+In this article, I have introduced the \pkg{oaxaca} package for the \proglang{R} statistical programming language. It is the first \proglang{R} package that allows researchers to estimate Blinder-Oaxaca decompositions, a statistical method that decomposes differences in mean outcomes across two groups into a part that is due to group differences in the levels of explanatory variables and a part that is due to differential magnitudes of regression coefficients.
+
+\pkg{oaxaca} estimates threefold and twofold Blinder-Oaxaca decompositions for linear models, and also provides estimates for a detailed, variable-by-variable decomposition. Each point estimate is presented with a bootstrapped standard error that measures the corresponding estimation uncertainty.
+
+I have demonstrated the package's capabilities through an empirical example that examines the wage gap between native and foreign-born Hispanic workers in the Chicago metropolitan area. In doing so, I have also showcased the \pkg{oaxaca} package's unique visualization features that allow users to graphically summarize the results of their decompositions.
+
+\section*{Acknowledgments}
+I would like to thank Kai Gehring and Becca Goldstein for helpful comments and suggestions.
+
+\bibliography{oaxaca}
+
+\end{document}
