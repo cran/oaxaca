@@ -4,8 +4,8 @@
 .onAttach <- 
 function(libname, pkgname) {
   packageStartupMessage("\nPlease cite as: \n")
-  packageStartupMessage(" Hlavac, Marek (2014). oaxaca: Blinder-Oaxaca Decomposition in R.")
-  packageStartupMessage(" R package version 0.1. http://CRAN.R-project.org/package=oaxaca \n")
+  packageStartupMessage(" Hlavac, Marek (2015). oaxaca: Blinder-Oaxaca Decomposition in R.")
+  packageStartupMessage(" R package version 0.1.2. http://CRAN.R-project.org/package=oaxaca \n")
 }
 
 .is.wholenumber <- function(x, tol = .Machine$double.eps^0.5)  {

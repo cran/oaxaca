@@ -1,2 +1,4 @@
 exportPattern("^[^\\.]")
 import(Formula, ggplot2, reshape2)
+S3method(plot, oaxaca)
+S3method(summary, oaxaca)

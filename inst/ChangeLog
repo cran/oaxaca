@@ -5,3 +5,7 @@ Do not hesitate to contact me at hlavac [at] fas.harvard.edu
 
 v. 0.1: 
 - first release of the package
+
+v. 0.1.2:
+- S3 methods are now properly registered
+- some minor formatting changes

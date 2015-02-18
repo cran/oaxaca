@@ -145,7 +145,7 @@ Again, a detailed, variable-by-variable decomposition can also be estimated:
 \underbrace{\boldsymbol{\bar{X}}_{B}' (\boldsymbol{\hat{\beta}}_{R} - \boldsymbol{\hat{\beta}}_{B})}_\text{unexplained B} =  \underbrace{\bar{X}_{2B} (\hat{\beta}_{2R} - \hat{\beta}_{2B})}_\text{variable 1} + \underbrace{\bar{X}_{2B} (\hat{\beta}_{2R} - \hat{\beta}_{2B})}_\text{variable 2} + \dots
 \end{equation}
 
-The choice of the reference coefficients is generally up to the researcher. In the literature on labor market discrimination, it is often assumed that only one of the two groups faces discrimination - for instance, that only women or members of ethnic minorities are discriminated against. In such cases, the reference coefficients will simply be the coefficients from a regression on observations from one of the groups: either $\boldsymbol{\hat{\beta}}_{R} = \boldsymbol{\hat{\beta}}_{A}$ or $\boldsymbol{\hat{\beta}}_{R} = \boldsymbol{\hat{\beta}}_{B}$.
+The choice of the reference coefficients is generally up to the researcher. In the literature on labor market discrimination, it is often assumed that only one of the two groups faces discrimination -- for instance, that only women or members of ethnic minorities are discriminated against. In such cases, the reference coefficients will simply be the coefficients from a regression on observations from one of the groups: either $\boldsymbol{\hat{\beta}}_{R} = \boldsymbol{\hat{\beta}}_{A}$ or $\boldsymbol{\hat{\beta}}_{R} = \boldsymbol{\hat{\beta}}_{B}$.
 
 Some researchers have instead used a weighted average of $\boldsymbol{\hat{\beta}}_{A}$ and $\boldsymbol{\hat{\beta}}_{B}$ as the set of reference coefficients. \citet{Reimers1983}, for example, proposes giving equal weight to coefficients from regressions on Group A and Group B observations:
 
@@ -177,7 +177,7 @@ To ensure that the Blinder-Oaxaca decomposition results are invariant to the use
 Y = \tilde{\beta}_{0} + \tilde{\beta}_{1}D_{1} + \tilde{\beta}_{2}D_{2} + \tilde{\beta}_{3}D_{3} + \dots + \tilde{\beta}_{k-1}D_{k-1} + \tilde{\beta}_{k}D_{k} + \boldsymbol{X}'\boldsymbol{\gamma} + \epsilon
 \end{equation}
 
-where the new regression coefficients on the indicator variables are calculated by adding or subtracting an adjustment amount $a$ to the original coefficients. The adjustment amount $a$ is simply the sum of the original dummy coefficients $\boldsymbol{\beta}$ divided by $k$, the total number of categories: 
+where the new regression coefficients on the indicator variables are calculated by adding or subtracting an adjustment amount $a$ to/from the original coefficients. The adjustment amount $a$ is simply the sum of the original dummy coefficients $\boldsymbol{\beta}$ divided by $k$, the total number of categories: 
 
 \begin{equation}
 a = \frac{\sum\limits_{j=1}^{k-1} \beta_{j}}{k}
@@ -259,11 +259,9 @@ The \code{chicago} data frame contains information about the demographic charact
 I am interested in decomposing the wage gap between native and foreign-born workers. The wage gap could be due to group differences in the level of wage determinants such as age, gender or education. Alternatively, the gap could arise from a differential effect of these determinants on native and immigrant workers' wages. I call the \code{oaxaca()} function to estimate the relative magnitudes of these channels' influence:
 
 \begin{CodeInput}
-R> results <- oaxaca(formula = real.wage ~ age + female + 
-+                    LTHS + some.college + college + 
-+                    advanced.degree | foreign.born |
-+                    LTHS + some.college + college + 
-+                    advanced.degree, data = chicago, R = 1000) 
+R> results <- oaxaca(formula = real.wage ~ age + female + LTHS + 
++    some.college + college + advanced.degree | foreign.born | LTHS +
++    some.college + college + advanced.degree, data = chicago, R = 1000) 
 \end{CodeInput}
 
 As the \code{formula} argument indicates, the outcome variable in this decomposition is \code{real.wage}, the worker's real wage denominated in 2013 U.S. dollars. The values of the dependent variable had been obtained by exponentiating the natural logarithm of the workers' real wages (contained in the provided \code{ln.real.wage} variable):
@@ -419,13 +417,11 @@ I can explore the unexplained component even further. In Figure~\ref{FigTwofoldS
 
 \begin{CodeInput}
 R> plot(results, decomposition = "twofold", weight = -1,
-+       unexplained.split = TRUE,
-+       components = c("unexplained A", "unexplained B"),
-+       component.labels = c("unexplained A" = "In Favor of Natives",
-+                            "unexplained B" = "Against the Foreign-Born"),
-+       variables = c("age", "female", "college"),
-+       variable.labels = c("age" = "Years of Age", "female" = "Female",
-+                           "college" = "College Education"))
++    unexplained.split = TRUE, components = c("unexplained A", 
++    "unexplained B"), component.labels = c("unexplained A" = 
++    "In Favor of Natives", "unexplained B" = "Against the Foreign-Born"),
++    variables = c("age", "female", "college"), variable.labels = c("age" =
++    "Years of Age", "female" = "Female", "college" = "College Education"))
 \end{CodeInput}
 
 I use a variety of \code{plot()} method arguments to customize the formatting of the resulting bar graph. Through the \code{components} and \code{component.labels} arguments, I choose to display only the two subparts -- \code{"unexplained A"} (i.e., discrimination in favor of Group A) and \code{"unexplained B"} (discrimination against Group B) -- of the unexplained decomposition component, and attach appropriate labels to them. Similarly, I use the \code{variables} and \code{variable.labels} arguments to select and label the variables I examine.
@@ -443,13 +439,12 @@ The comparison would be a little easier to make if the discrimination components
 
 \begin{CodeInput}
 R> plot(results, decomposition = "twofold", weight = -1,
-+       unexplained.split = TRUE,
-+       components = c("unexplained A", "unexplained B"),
-+       component.labels = c("unexplained A" = "In Favor of Natives",
-+                            "unexplained B" = "Against the Foreign-Born"),
-+       component.left = TRUE, variables = c("age","female","college"),
-+       variable.labels = c("age" = "Years of Age", "female" = "Female",
-+                           "college" = "College Education"))
++    unexplained.split = TRUE, components = c("unexplained A", 
++    "unexplained B"), component.labels = c("unexplained A" = 
++    "In Favor of Natives", "unexplained B" = "Against the Foreign-Born"),
++    component.left = TRUE, variables = c("age","female","college"),
++    variable.labels = c("age" = "Years of Age", "female" = "Female",
++    "college" = "College Education"))
 \end{CodeInput}
 
 
@@ -464,9 +459,9 @@ R> plot(results, decomposition = "twofold", weight = -1,
 Specific numerical values of the point estimates of the unexplained discrimination components can, of course, be obtained directly from the \code{"oaxaca"}-class object:
 
 \begin{CodeInput}
-> variables <- c("age", "female", "college")
-> columns <- c("weight", "coef(unexplained A)", "coef(unexplained B)")
-> results$twofold$variables[[5]][variables, columns]
+R> variables <- c("age", "female", "college")
+R> columns <- c("weight", "coef(unexplained A)", "coef(unexplained B)")
+R> results$twofold$variables[[5]][variables, columns]
 \end{CodeInput}
 
 \begin{CodeOutput}

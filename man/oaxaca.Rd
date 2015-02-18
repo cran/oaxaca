@@ -122,8 +122,8 @@ Marek Hlavac   < hlavac at fas.harvard.edu > \cr
 Harvard University, Political Economy and Government \cr
 }
 \section{Please cite as:}{
-Hlavac, Marek (2014). oaxaca: Blinder-Oaxaca Decomposition in R.\cr
-R package version 0.1. http://CRAN.R-project.org/package=oaxaca 
+Hlavac, Marek (2015). oaxaca: Blinder-Oaxaca Decomposition in R.\cr
+R package version 0.1.2. http://CRAN.R-project.org/package=oaxaca 
 }
 \seealso{
 \code{\link{plot.oaxaca}}
