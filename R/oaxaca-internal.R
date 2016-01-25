@@ -4,8 +4,8 @@
 .onAttach <- 
 function(libname, pkgname) {
   packageStartupMessage("\nPlease cite as: \n")
-  packageStartupMessage(" Hlavac, Marek (2015). oaxaca: Blinder-Oaxaca Decomposition in R.")
-  packageStartupMessage(" R package version 0.1.2. http://CRAN.R-project.org/package=oaxaca \n")
+  packageStartupMessage(" Hlavac, Marek (2016). oaxaca: Blinder-Oaxaca Decomposition in R.")
+  packageStartupMessage(" R package version 0.1.3. http://CRAN.R-project.org/package=oaxaca \n")
 }
 
 .is.wholenumber <- function(x, tol = .Machine$double.eps^0.5)  {
@@ -325,7 +325,7 @@ function(formula, data, weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
     ### regression objects
     out.reg <- list()
     out.reg$reg.A <- reg.object.A
-    out.reg$reg.B <- reg.object.A
+    out.reg$reg.B <- reg.object.B
     out.reg$reg.pooled.1 <- reg.object.pooled
     out.reg$reg.pooled.2 <- reg.object.pooled.collapse
     
@@ -935,10 +935,10 @@ function(formula, data, weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
   
   # plot the result
   ggplot(d,
-    aes(x = left.side, y = value, fill = left.side), ...) +
+    aes(x = left.side, y = value, fill = left.side, ...)) +
     geom_bar(stat = "identity",position = position_dodge(0.9)) +
     p.scale_fill_manual +
-    geom_hline(xintercept = 0, linetype = "dotted") + 
+    geom_hline(yintercept = 0, linetype = "dotted") + 
     p.geom_point +
     p.geom_errorbar +
     xlab(ylab) +

@@ -4,10 +4,10 @@ citEntry(
   entry="Manual",
   title = "oaxaca: Blinder-Oaxaca Decomposition in R",
   author = as.person("Marek Hlavac"),
-  year = "2015",
-  note = "R package version 0.1.2",
+  year = "2016",
+  note = "R package version 0.1.3",
   organization = "Harvard University",
   address = "Cambridge, USA",
-  textVersion = "Hlavac, Marek (2015). oaxaca: Blinder-Oaxaca Decomposition in R. R package version 0.1.2. http://CRAN.R-project.org/package=oaxaca",
+  textVersion = "Hlavac, Marek (2016). oaxaca: Blinder-Oaxaca Decomposition in R. R package version 0.1.3. http://CRAN.R-project.org/package=oaxaca",
   url = "http://CRAN.R-project.org/package=oaxaca"
 )

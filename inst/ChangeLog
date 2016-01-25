@@ -3,9 +3,15 @@ oaxaca: Blinder-Oaxaca Decomposition in R - What's new?
 Please note that I am always looking for comments and suggestions. 
 Do not hesitate to contact me at hlavac [at] fas.harvard.edu
 
-v. 0.1: 
-- first release of the package
+v. 0.1.3:
+- fixed bug that led oaxaca to report same values for reg.A and reg.B in the model object
+- oaxaca is now compatible with new version of ggplot2
 
 v. 0.1.2:
 - S3 methods are now properly registered
 - some minor formatting changes
+
+v. 0.1: 
+- first release of the package
+
+
