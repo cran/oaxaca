@@ -2,10 +2,10 @@
 # Author: Marek Hlavac
 
 oaxaca <-
-function(formula, data, weights = NULL, R = 100, reg.fun = lm,  ...) {  
+function(formula, data, group.weights = NULL, R = 100, reg.fun = lm,  ...) {  
   cl <- match.call()
     
-  return(.oaxaca.wrap(formula=formula, data=data, weights=weights, R=R, reg.fun=reg.fun, cl=cl, ...))
+  return(.oaxaca.wrap(formula=formula, data=data, group.weights=group.weights, R=R, reg.fun=reg.fun, cl=cl, ...))
 }
 
 summary.oaxaca <- function(object, ...) {
@@ -13,7 +13,7 @@ summary.oaxaca <- function(object, ...) {
 }
 
 plot.oaxaca <- function(x, decomposition = "threefold", type = "variables",
-                        weight = NULL, unexplained.split = FALSE,
+                        group.weight = NULL, unexplained.split = FALSE,
                         variables = NULL, components = NULL,
                         component.left = FALSE,
                         component.labels = NULL,
@@ -24,7 +24,7 @@ plot.oaxaca <- function(x, decomposition = "threefold", type = "variables",
   cl <- match.call()
   
   return(.plot.oaxaca(x=x, decomposition=decomposition, type=type,
-                      w=weight, unexplained.split=unexplained.split,
+                      w=group.weight, unexplained.split=unexplained.split,
                       variables=variables, components=components,
                       component.left=component.left,
                       component.labels=component.labels, variable.labels=variable.labels, 

@@ -12,13 +12,13 @@
 The \code{oaxaca} function allows users to estimate both a threefold and a twofold variant of the decomposition, as described and implemented by Jann (2008). It supports a variety of reference coefficient weights, as well as pooled model estimation. It can also adjust coefficients on indicator variables to be invariant to the choice of the omitted reference category. Bootstrapped standard errors are calculated (e.g., Efron, 1979). The function returns an object of class \code{"oaxaca"} that can be visualized using the \code{\link{plot.oaxaca}} method.
 }
 \usage{
-oaxaca(formula, data, weights = NULL, R = 100, reg.fun = lm, ...)
+oaxaca(formula, data, group.weights = NULL, R = 100, reg.fun = lm, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{formula}{a formula that specifies the model that the function will run. Typically, the formula is of the following form:\cr \cr  \code{y ~ x1 + x2 + x3 + ... | z}\cr \cr where \code{y} is the dependent variable, \code{x1 + x2 + x3 + ...} are explanatory variables and \code{z} is an indicator variable that is \code{TRUE} (or equal to 1) when an observation belongs to Group B, and \code{FALSE} (or equal to 0) when it belongs to Group A.\cr \cr The formula can also take on an alternative form:\cr \cr \code{y ~ x1 + x2 + x3 + ... | z | d1 + d2 + d3 + ...}\cr \cr Here, \code{d1 + d2 + d3 + ...} are indicator ("dummy") variables that will be adjusted so that the decomposition results do not change depending on the user's choice of the reference category (Gardeazabal and Ugidos, 2004).}
   \item{data}{a data frame containing the data to be used in the Blinder-Oaxaca decomposition.}
-  \item{weights}{a vector of numeric values between 0 and 1. These values specify the weight given to Group A relative to Group B in determining the reference set of coefficients (Oaxaca and Ransom, 1994). By default, the following weights are included in each estimation:
+  \item{group.weights}{a vector of numeric values between 0 and 1. These values specify the weight given to Group A relative to Group B in determining the reference set of coefficients (Oaxaca and Ransom, 1994). By default, the following weights are included in each estimation:
     \itemize{
       \item \code{0}: Group A coefficients used as reference.
       \item \code{1}: Group B coefficients used as reference.
@@ -118,12 +118,13 @@ Reimers, Cordelia W. (1983). Labor Market Discrimination Against Hispanic and Bl
 }
 \author{
 %%  ~~who you are~~
-Marek Hlavac   < hlavac at fas.harvard.edu > \cr
-Harvard University, Political Economy and Government \cr
+Dr. Marek Hlavac   < mhlavac at alumni.princeton.edu > \cr
+Department of Economics, UWC Adriatic, Duino, Italy \cr
+Research Fellow, Central European Labour Studies Institute (CELSI), Bratislava, Slovakia \cr
 }
 \section{Please cite as:}{
-Hlavac, Marek (2016). oaxaca: Blinder-Oaxaca Decomposition in R.\cr
-R package version 0.1.3. http://CRAN.R-project.org/package=oaxaca 
+Hlavac, Marek (2018). oaxaca: Blinder-Oaxaca Decomposition in R.\cr
+R package version 0.1.4. https://CRAN.R-project.org/package=oaxaca 
 }
 \seealso{
 \code{\link{plot.oaxaca}}
@@ -157,7 +158,7 @@ print(oaxaca.results.1)
 oaxaca.results.2 <- oaxaca(ln.real.wage ~ age + female + LTHS + some.college + 
                                           college + advanced.degree | foreign.born |
                                           LTHS + some.college + college + advanced.degree,
-                           data = chicago, weights = c(0.2, 0.4), R = 30)
+                           data = chicago, group.weights = c(0.2, 0.4), R = 30)
 
 # plot the results
 plot(oaxaca.results.2)

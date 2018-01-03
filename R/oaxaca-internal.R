@@ -4,8 +4,8 @@
 .onAttach <- 
 function(libname, pkgname) {
   packageStartupMessage("\nPlease cite as: \n")
-  packageStartupMessage(" Hlavac, Marek (2016). oaxaca: Blinder-Oaxaca Decomposition in R.")
-  packageStartupMessage(" R package version 0.1.3. http://CRAN.R-project.org/package=oaxaca \n")
+  packageStartupMessage(" Hlavac, Marek (2018). oaxaca: Blinder-Oaxaca Decomposition in R.")
+  packageStartupMessage(" R package version 0.1.4. https://CRAN.R-project.org/package=oaxaca \n")
 }
 
 .is.wholenumber <- function(x, tol = .Machine$double.eps^0.5)  {
@@ -63,7 +63,7 @@ function(libname, pkgname) {
 
 ################################## oaxaca ##################################
 .oaxaca.wrap <-
-function(formula, data, weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
+function(formula, data, group.weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
   
   create.object <-
   function(coef, se, cl) {
@@ -86,10 +86,10 @@ function(formula, data, weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
       names(se$threefold$overall) <- colnames(se$threefold$variables) <- c("se(endowments)", "se(coefficients)", "se(interaction)")
       
       se$twofold$overall <- matrix(NA, nrow = w, ncol = 5)
-      colnames(se$twofold$overall) <- c("weight", "se(explained)", "se(unexplained)", "se(unexplained A)", "se(unexplained B)")
+      colnames(se$twofold$overall) <- c("group.weight", "se(explained)", "se(unexplained)", "se(unexplained A)", "se(unexplained B)")
       for (i in 1:w) { 
         se$twofold$variables[[i]] <- matrix(NA, nrow = nrow(coef$threefold$variables), ncol = 5) 
-        colnames(se$twofold$variables[[i]]) <- c("weight", "se(explained)", "se(unexplained)", "se(unexplained A)", "se(unexplained B)")
+        colnames(se$twofold$variables[[i]]) <- c("group.weight", "se(explained)", "se(unexplained)", "se(unexplained A)", "se(unexplained B)")
       }
     }
     
@@ -99,7 +99,7 @@ function(formula, data, weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
     object$threefold$variables <- cbind(coef$threefold$variables, se$threefold$variables)[,order.threefold]
     
     # twofold
-    order.twofold <- c("weight", "coef(explained)", "se(explained)", "coef(unexplained)", "se(unexplained)", "coef(unexplained A)", "se(unexplained A)", "coef(unexplained B)", "se(unexplained B)")
+    order.twofold <- c("group.weight", "coef(explained)", "se(explained)", "coef(unexplained)", "se(unexplained)", "coef(unexplained A)", "se(unexplained A)", "coef(unexplained B)", "se(unexplained B)")
     object$twofold$overall <- cbind(coef$twofold$overall, se$twofold$overall[,-1,drop=FALSE])[,order.twofold]
     
     object$twofold$variables <- list()
@@ -160,6 +160,7 @@ function(formula, data, weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
     
     # number of observations used
     n.A <- length(used.y.A); n.B <- length(used.y.B); n.pooled <- length(used.y.pooled)
+    proportion.A <- n.A / n.pooled  # proportion of observations that have group.var = 0
     proportion.B <- n.B / n.pooled  # proportion of observations that have group.var = 1
       
     # difference in coefficients
@@ -226,7 +227,7 @@ function(formula, data, weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
     ## two-fold decomposition
         
     # weights: -1 = pooled regression betas; -2 = pooled regression betas (including the group variable)
-    w <- c(0, 1, 0.5, proportion.B, -1, -2) 
+    w <- c(0, 1, 0.5, proportion.A, -1, -2) 
     w <- c(w, w.extra)
         
     # various values of weights (w)
@@ -285,7 +286,7 @@ function(formula, data, weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
         rownames(out.twofold.vars[[i]])[length(rownames(out.twofold.vars[[i]]))] <- "(Base)"
       }
 
-      colnames(out.twofold.overall) <- colnames(out.twofold.vars[[i]]) <- c("weight", "coef(explained)", "coef(unexplained)", "coef(unexplained A)", "coef(unexplained B)")      
+      colnames(out.twofold.overall) <- colnames(out.twofold.vars[[i]]) <- c("group.weight", "coef(explained)", "coef(unexplained)", "coef(unexplained A)", "coef(unexplained B)")      
     }
           
     out.threefold <- list(out.threefold.overall, out.threefold.vars)
@@ -551,10 +552,10 @@ function(formula, data, weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
           out.twofold.vars[[i]] <- rbind(out.twofold.vars[[i]], base.line.bootstrap)
         }
         
-        colnames(out.twofold.vars[[i]]) <- c("weight", "se(explained)", "se(unexplained)", "se(unexplained A)", "se(unexplained B)")      
+        colnames(out.twofold.vars[[i]]) <- c("group.weight", "se(explained)", "se(unexplained)", "se(unexplained A)", "se(unexplained B)")      
       }
       
-      colnames(out.twofold.overall) <- c("weight", "se(explained)", "se(unexplained)", "se(unexplained A)", "se(unexplained B)")      
+      colnames(out.twofold.overall) <- c("group.weight", "se(explained)", "se(unexplained)", "se(unexplained A)", "se(unexplained B)")      
       
       out.threefold <- list(out.threefold.overall, out.threefold.vars)
       out.twofold <- list(out.twofold.overall, out.twofold.vars)
@@ -602,7 +603,7 @@ function(formula, data, weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
     
     # check if group.var is dummy
     if (is.data.frame(data) && (is.null(error.msg))) {
-      if (!((is.logical(data[,group.var])) || (all(data[,group.var] %in% c(1,0)))) ) { error.msg <- c(error.msg,"Variable z in argument 'formula' must be logical (TRUE/FALSE) or numeric (with values of only 0 and 1).\n") }    
+      if (!((is.logical(data[[group.var]])) || (all(data[[group.var]] %in% c(1,0)))) ) { error.msg <- c(error.msg,"Variable z in argument 'formula' must be logical (TRUE/FALSE) or numeric (with values of only 0 and 1).\n") }    
     
       # check formula dummies
       if (!is.null(formula.dummy)) {
@@ -634,7 +635,7 @@ function(formula, data, weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
   if (!is.data.frame(data)) { error.msg <- c(error.msg,"Argument 'data' must contain a data frame.\n")}
   if ((!is.null(R)) && (!.is.all.integers.at.least(R, 1))) { error.msg <- c(error.msg,"Argument 'R' must be NULL or a positive integer.\n")}
   if ((!is.null(R)) && (length(R) !=1 )) { error.msg <- c(error.msg,"Argument 'R' must be of length 1.\n")}
-  if ((!is.null(weights)) && (!.is.all.between(weights, 0, 1))) { error.msg <- c(error.msg,"Argument 'weights' must be NULL or a vector of positive numbers between 0 and 1.\n")}
+  if ((!is.null(group.weights)) && (!.is.all.between(group.weights, 0, 1))) { error.msg <- c(error.msg,"Argument 'group.weights' must be NULL or a vector of positive numbers between 0 and 1.\n")}
   if (!is.function(reg.fun)) { error.msg <- c(error.msg,"Argument 'reg.fun' must be a function.\n")}
   if (length(reg.fun) != 1) { error.msg <- c(error.msg,"Argument 'reg.fun' must be of length 1.\n")}
 
@@ -650,11 +651,11 @@ function(formula, data, weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
   message("oaxaca: oaxaca() performing analysis. Please wait.")
   
   # remove repetitive weights
-  if (!is.null(weights)) { weights <- unique(weights) }
+  if (!is.null(group.weights)) { group.weights <- unique(group.weights) }
   
   # call bunch of functions
-  coef <- run.oaxaca.coef(formula.reg = formula.reg, formula.reg.collapse = formula.reg.collapse, formula.dummy = formula.dummy, data = data, group.var = group.var, y = y, w.extra = weights, reg.fun = reg.fun, R=R, ...)
-  if (!is.null(R)) { se <- run.oaxaca.bootstrap(formula.reg = formula.reg, formula.reg.collapse = formula.reg.collapse, formula.dummy = formula.dummy, data = data, group.var = group.var, y = y, w.extra = weights, reg.fun = reg.fun, R = R, ...) }
+  coef <- run.oaxaca.coef(formula.reg = formula.reg, formula.reg.collapse = formula.reg.collapse, formula.dummy = formula.dummy, data = data, group.var = group.var, y = y, w.extra = group.weights, reg.fun = reg.fun, R=R, ...)
+  if (!is.null(R)) { se <- run.oaxaca.bootstrap(formula.reg = formula.reg, formula.reg.collapse = formula.reg.collapse, formula.dummy = formula.dummy, data = data, group.var = group.var, y = y, w.extra = group.weights, reg.fun = reg.fun, R = R, ...) }
   else { se <- NULL }
   
   # create 'oaxaca' object
@@ -687,8 +688,8 @@ function(formula, data, weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
   if (length(type) != 1) { error.msg <- c(error.msg,"Argument 'type' must be of length 1.\n")}  
   if ((length(type)==1) && (!(type %in% c("overall", "variables")))) { error.msg <- c(error.msg,"Argument 'decomposition' must be either 'overall' or 'variables' (default).\n")}
   
-  if ((!is.null(w)) && (!is.numeric(w))) { error.msg <- c(error.msg,"Argument 'weight' must be NULL or numeric.\n")}  
-  if ((!is.null(w)) && (length(w) != 1)) { error.msg <- c(error.msg,"Argument 'weight' must be of length 1.\n")}  
+  if ((!is.null(w)) && (!is.numeric(w))) { error.msg <- c(error.msg,"Argument 'group.weight' must be NULL or numeric.\n")}  
+  if ((!is.null(w)) && (length(w) != 1)) { error.msg <- c(error.msg,"Argument 'group.weight' must be of length 1.\n")}  
   
   # find the appropriate twofold decomposition given w
   w.where <- NULL
@@ -699,7 +700,7 @@ function(formula, data, weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
     if (is.null(w.where)) { error.msg <- c(error.msg,"Unable to find the weight specified in argument 'w'.\n")}
   }
   
-  if ((decomposition == "twofold") && (is.null(w))) { error.msg <- c(error.msg,"Argument 'weight' must be specified when decomposition = 'twofold'.\n")}
+  if ((decomposition == "twofold") && (is.null(w))) { error.msg <- c(error.msg,"Argument 'group.weight' must be specified when decomposition = 'twofold'.\n")}
                              
   if (!is.logical(unexplained.split)) { error.msg <- c(error.msg,"Argument 'unexplained.split' must be logical (TRUE / FALSE).\n")}  
   if (length(unexplained.split) != 1) { error.msg <- c(error.msg,"Argument 'unexplained.split' must be of length 1.\n")}                           

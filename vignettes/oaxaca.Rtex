@@ -6,7 +6,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% almost as usual
-\author{Marek Hlavac\\Harvard University}
+\author{Marek Hlavac\\Department of Economics, UWC Adriatic, Duino (Trieste), Italy\\Central European Labour Studies Institute (CELSI), Bratislava, Slovakia}
 \title{\pkg{oaxaca}: Blinder-Oaxaca Decomposition in \proglang{R}}
 
 %% for pretty printing and a nice hypersummary also set:
@@ -34,13 +34,13 @@ This article introduces the \proglang{R} package \pkg{oaxaca} to perform the Bli
 %% The address of (at least) one author should be given
 %% in the following format:
 \Address{
-  Marek Hlavac\\
-  Harvard University\\
-  John F. Kennedy School of Government\\
-  79 John F. Kennedy Street\\
-  Cambridge, MA 02138\\  
-  United States of America\\
-  E-mail: \email{hlavac@fas.harvard.edu}\\
+  Dr. Marek Hlavac\\
+  UWC Adriatic\\
+  via Trieste 29\\
+  Duino-Aurisina (TS), 34011\\
+  Italy\\
+  \\
+  E-mail: \email{mhlavac@alumni.princeton.edu}\\
 }
 %% It is also possible to add a telephone and fax number
 %% before the e-mail in the following format:
@@ -57,6 +57,12 @@ This article introduces the \proglang{R} package \pkg{oaxaca} to perform the Bli
 
 \begin{document}
 
+If you use the \pkg{oaxaca} package in your research, please do not forget to include a citation:
+
+\begin{itemize}
+\item Hlavac, Marek (2018). oaxaca: Blinder-Oaxaca Decomposition in R. R package version 0.1.4. https://CRAN.R-project.org/package=oaxaca
+\end{itemize}
+
 %% include your article here, just as usual
 %% Note that you should use the \pkg{}, \proglang{} and \code{} commands.
 \section{Introduction}
@@ -65,9 +71,9 @@ This article introduces the \proglang{R} package \pkg{oaxaca} to perform the Bli
 In this article, I introduce the \proglang{R} package \pkg{oaxaca} to estimate Blinder-Oaxaca decompositions for linear regression models. The Blinder-Oaxaca decomposition is a statistical method that decomposes differences in mean outcomes across two groups into a part that is due to group differences in the levels of explanatory variables and a part that is due to differential magnitudes of regression coefficients.
 
 
-The Blinder-Oaxaca decomposition originated and has been widely used in the study of labor market discrimination \citep{Blinder1973, Oaxaca1973}. Economists and sociologists have, for instance, used it to decompose wage and earnings differences based on gender \citep[e.g.,][]{Stanley1998, Weichselbaumer2005} and race \citep[e.g.,][]{Darity1996, Kim2010}. Although Blinder-Oaxaca decompositions have been a mainstay of empirical research on discrimination, they can be, in principle, applied to explain differences in any continuous outcome across any two groups. Researchers have, for instance, used it to examine the assimilation of immigrants \citep{LaLondeTopel1992}, school enrolment rates \citep{BorooahIyer2005}, health insurance coverage \citep{Bustamante2009}, the prevalence of smoking \citep{BauerGohlmann2007}, or even local hunting lease rates \citep{MunnHussain2010}. 
+The Blinder-Oaxaca decomposition originated and has been widely used in the study of labor market discrimination \citep{Blinder1973, Oaxaca1973}. Economists and sociologists have, for instance, used it to decompose wage and earnings differences based on gender \citep[e.g.,][]{Stanley1998, Weichselbaumer2005} and race \citep[e.g.,][]{Darity1996, Kim2010}. Although Blinder-Oaxaca decompositions have been a mainstay of empirical research on discrimination, they can be, in principle, applied to explain differences in any continuous outcome across any two groups. Researchers have, for instance, used it to examine the assimilation of immigrants \citep{LaLondeTopel1992}, school enrollment rates \citep{BorooahIyer2005}, health insurance coverage \citep{Bustamante2009}, the prevalence of smoking \citep{BauerGohlmann2007}, or even local hunting lease rates \citep{MunnHussain2010}. 
 
-Several software implementations of the Blinder-Oaxaca decomposition are already available. These include modules \pkg{oaxaca} \citep{Jann2008}, \pkg{decomp} \citep{Watson2010} for \proglang{Stata} \citep{Stata} that estimate the decomposition for linear regression models, as well as \proglang{Stata} modules \pkg{fairlie} \citep{Jann2006} and \pkg{nldecompose} \citep{SinningHahnBauer2008} that implement the decomposition for a large variety of non-linear models using methods proposed in \citet{Fairlie2005}, \citet{BauerSinning2008} and \citet{BauerSinning2010}. A \proglang{SAS} \citep{SAS} implementation of the Blinder-Oaxaca decomposition for non-linear models is also available \citep{Fairlie2013}.
+Several software implementations of the Blinder-Oaxaca decomposition are already available. These include modules \pkg{oaxaca} \citep{Jann2008} and \pkg{decomp} \citep{Watson2010} for \proglang{Stata} \citep{Stata} that estimate the decomposition for linear regression models. In addition, \proglang{Stata} modules \pkg{fairlie} \citep{Jann2006} and \pkg{nldecompose} \citep{SinningHahnBauer2008}  implement the decomposition for a large variety of non-linear models using methods proposed in \citet{Fairlie2005}, \citet{BauerSinning2008} and \citet{BauerSinning2010}. A \proglang{SAS} \citep{SAS} implementation of the Blinder-Oaxaca decomposition for non-linear models is also available \citep{Fairlie2013}.
 
 The \pkg{oaxaca} package is the first Blinder-Oaxaca decomposition package for the \proglang{R} statistical programming language \citep{R}. It implements several types of the decomposition for linear regression models, and obtains point estimates of all decomposition components using the same estimation procedures as the \proglang{Stata} module \pkg{oaxaca} \citep{Jann2008}. Standard errors are calculated using a non-parametric bootstrapping approach \citep{Efron1979}. Unlike any other existing software implementation of the Blinder-Oaxaca decomposition, \pkg{oaxaca} enables users to generate elegant bar graph visualizations of all decomposition results.
 
@@ -159,7 +165,7 @@ Some researchers have instead used a weighted average of $\boldsymbol{\hat{\beta
 \boldsymbol{\hat{\beta}}_{R} = \frac{n_{A}}{n_{A}+n_{B}}\boldsymbol{\hat{\beta}}_{A} + \frac{n_{B}}{n_{A}+n_{B}}\boldsymbol{\hat{\beta}}_{B}
 \end{equation}
 
-Others still have advocated the use of coefficient estimates from a regression that pools observations from both Groups A and B, and includes \citep{Jann2008} or does not include \citep{Neumark1988} the group indicator variable as an additional regressor. The \pkg{oaxaca} package estimates results for all of the aforementioned choices of $\boldsymbol{\hat{\beta}}_{R}$, and also enables users to specify their own custom weights for $\boldsymbol{\hat{\beta}}_{A}$ and $\boldsymbol{\hat{\beta}}_{B}$ to construct a weighted average-based set of reference coefficients.
+Other researchers still have advocated the use of coefficient estimates from a regression that pools observations from both Groups A and B, and includes \citep{Jann2008} or does not include \citep{Neumark1988} the group indicator variable as an additional regressor. The \pkg{oaxaca} package estimates results for all of the aforementioned choices of $\boldsymbol{\hat{\beta}}_{R}$, and also enables users to specify their own custom weights for $\boldsymbol{\hat{\beta}}_{A}$ and $\boldsymbol{\hat{\beta}}_{B}$ to construct a weighted average-based set of reference coefficients.
 
 \subsection[Sensitivity to the choice of omitted baseline category]{Sensitivity to the choice of omitted baseline category}
 
@@ -233,7 +239,7 @@ When categorical variable dummies are specified, the \code{oaxaca()} function wi
 
 If the user does not include any other arguments, \code{oaxaca()} will estimate the Blinder-Oaxaca decompositions -- both threefold and twofold -- based on Ordinary Least Squares regressions (estimated via the standard \code{lm()} function), and will calculate standard errors based on 100 bootstrapping replicates. By default, \code{oaxaca()} estimates the twofold decomposition with Group A coefficients, Group B coefficients, their equally weighted average \citep{Reimers1983}, a weighted average that reflects the number of observations in Groups A and B \citep{Cotton1988}, as well with pooled coefficients -- both including and excluding the group indicator variable \citep{Neumark1988, Jann2008} -- as the set of reference coefficients.
 
-These defaults can, however, easily be changed. Users can use the argument \code{weights} to specify additional relative weights of Group A and Group B coefficients in the estimation of the twofold decomposition. They can also choose, via the \code{R} argument, how many bootstrapping resamples should be drawn to calculate the standard errors. Last but not least, users can use a difference regression function (argument \code{reg.fun}) to estimate the regression coefficients used in the decompositions. Note that, if a non-linear function such as \code{glm()} is chosen, the decomposition will be based on the linear systematic component -- usually associated with the estimation of the corresponding latent variable -- of the regression method.
+These defaults can, however, easily be changed. Users can use the argument \code{group.weights} to specify additional relative weights of Group A and Group B coefficients in the estimation of the twofold decomposition. They can also choose, via the \code{R} argument, how many bootstrapping resamples should be drawn to calculate the standard errors. Last but not least, users can use a different regression function (argument \code{reg.fun}) to estimate the regression coefficients used in the decompositions. Note that, if a non-linear function such as \code{glm()} is chosen, the decomposition will be based on the linear systematic component -- usually associated with the estimation of the corresponding latent variable -- of the regression method.
 
 The function \code{oaxaca()} returns an object of class \code{"oaxaca"}, which can then be passed on to the \code{plot()} method to obtain a bar graph visualization of the Blinder-Oaxaca decomposition results. The object contains lists named \code{threefold} and \code{twofold} which contain the results of the threefold and twofold decompositions, respectively. In addition, the object stores the regression coefficients used in the decomposition (component \code{beta}), the number of observations in each group that were used in the analysis (\code{n}), the number of bootstrapping replicates (\code{R}), the regression objects generated during the analysis (\code{reg}), as well as the mean values of both the dependent variable (\code{y}) and the explanatory variables (\code{x}).
 
@@ -380,20 +386,20 @@ R> results$twofold$overall
 \end{CodeInput}
 
 \begin{CodeOutput}
-         weight coef(explained) se(explained) coef(unexplained) se(unexplained)
-[1,]  0.0000000       1.6165339     0.6565025          1.399040       0.9415643
-[2,]  1.0000000       0.1822482     0.7126499          2.833326       0.8936198
-[3,]  0.5000000       0.8993911     0.5579216          2.116183       0.8272809
-[4,]  0.5800562       0.7845676     0.5669967          2.231007       0.8254721
-[5,] -1.0000000       1.3557222     0.5059496          1.659852       0.6589794
-[6,] -2.0000000       0.9525717     0.5220180          2.063003       0.8269841
+     group.weight coef(explained) se(explained) coef(unexplained) se(unexplained) 
+[1,]    0.0000000       1.6165339     0.6565025          1.399040       0.9415643        
+[2,]    1.0000000       0.1822482     0.7126499          2.833326       0.8936198       
+[3,]    0.5000000       0.8993911     0.5579216          2.116183       0.8272809      
+[4,]    0.4309309       0.9984559     0.5653354          2.017118       0.8254298      
+[5,]   -1.0000000       1.3557222     0.5059496          1.659852       0.6589794      
+[6,]   -2.0000000       0.9525717     0.5220180          2.063003       0.8269841       
      coef(unexplained A) se(unexplained A) coef(unexplained B) se(unexplained B)
 [1,]        1.399040e+00      9.415643e-01           0.0000000         0.0000000
-[2,]        0.000000e+00      0.000000e+00           2.8333261         0.8936198
-[3,]        6.995202e-01      4.707821e-01           1.4166630         0.4468099
-[4,]        5.875183e-01      3.954041e-01           1.6434883         0.5183497
-[5,]        9.445705e-01      3.763768e-01           0.7152816         0.2858236
-[6,]        4.490852e-14      3.801248e-14           2.0630026         0.8269841
+[2,]        0.000000e+00      0.000000e+00           2.8333261         0.8936198 
+[3,]        6.995202e-01      4.707821e-01           1.4166630         0.4468099 
+[4,]        7.961506e-01      4.057492e-01           1.2209678         0.5085314 
+[5,]        9.445705e-01      3.763768e-01           0.7152816         0.2858236 
+[6,]        4.490852e-14      3.801248e-14           2.0630026         0.8269841 
 \end{CodeOutput}
 
 For presentational ease, I focus my discussion on the \citet{Neumark1988} decomposition, which uses pooled regression coefficients (from a regression that does not include the group indicator variable \code{foreign.born}) as the reference coefficient set. The Neumark decomposition is denoted by \code{-1} in the \code{weights} column. The results of the overall twofold decomposition indicate that the \$3.02 wage gap between native and foreign-born Hispanic workers can be decomposed into \$1.36 that can be explained by group differences in the explanatory variables and \$1.66 that is unexplained. 
@@ -401,7 +407,7 @@ For presentational ease, I focus my discussion on the \citet{Neumark1988} decomp
 Let us assume that the unexplained component of the wage gap occurs due to labor market discrimination, and that the pooled regression coefficients are non-discriminatory.  The Blinder-Oaxaca decomposition would then also indicate that \$0.94 of the unexplained part originates from discrimination in favor of native Hispanic workers (component \code{"unexplained A"}), while \$0.72 comes from discrimination against those who are born outside of the United States (component \code{"unexplained B"}). The standard errors provide a sense of the uncertainty that accompanies all of the point estimates.
 
 \begin{CodeInput}
-R> plot(results, decomposition = "twofold", weight = -1)
+R> plot(results, decomposition = "twofold", group.weight = -1)
 \end{CodeInput}
 
 Figure~\ref{FigTwofold} provides a variable-by-variable twofold decomposition. The results are consistent with the threefold composition. It appears that the wage gap is driven largely by the lower proportion of workers with less than a high school education among the natives (in the explained component) and by the native workers' greater returns to age.
@@ -460,15 +466,15 @@ Specific numerical values of the point estimates of the unexplained discriminati
 
 \begin{CodeInput}
 R> variables <- c("age", "female", "college")
-R> columns <- c("weight", "coef(unexplained A)", "coef(unexplained B)")
+R> columns <- c("group.weight", "coef(unexplained A)", "coef(unexplained B)")
 R> results$twofold$variables[[5]][variables, columns]
 \end{CodeInput}
 
 \begin{CodeOutput}
-        weight coef(unexplained A) coef(unexplained B)
-age         -1           4.3191008           2.3980443
-female      -1          -0.8285489          -0.4832824
-college     -1           0.3777076           0.3428246
+        group.weight coef(unexplained A) coef(unexplained B)
+age               -1           4.3191008           2.3980443
+female            -1          -0.8285489          -0.4832824
+college           -1           0.3777076           0.3428246
 \end{CodeOutput}
 
 To summarize, I have used the Blinder-Oaxaca decomposition to examine the wage gap between native and foreign-born Hispanic workers in the Chicago metropolitan area. The results of my analysis suggest that much of the gap can be explained by two facts:
@@ -487,7 +493,7 @@ In this article, I have introduced the \pkg{oaxaca} package for the \proglang{R}
 I have demonstrated the package's capabilities through an empirical example that examines the wage gap between native and foreign-born Hispanic workers in the Chicago metropolitan area. In doing so, I have also showcased the \pkg{oaxaca} package's unique visualization features that allow users to graphically summarize the results of their decompositions.
 
 \section*{Acknowledgments}
-I would like to thank Kai Gehring and Becca Goldstein for helpful comments and suggestions.
+I would like to thank Kai Gehring, Becca Goldstein, Jakub Kubajek, Olivier Monso and Sophie Saint-Philippe for helpful comments and suggestions.
 
 \bibliography{oaxaca}
 
