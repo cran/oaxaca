@@ -4,8 +4,8 @@
 .onAttach <- 
 function(libname, pkgname) {
   packageStartupMessage("\nPlease cite as: \n")
-  packageStartupMessage(" Hlavac, Marek (2018). oaxaca: Blinder-Oaxaca Decomposition in R.")
-  packageStartupMessage(" R package version 0.1.4. https://CRAN.R-project.org/package=oaxaca \n")
+  packageStartupMessage(" Hlavac, Marek (2022). oaxaca: Blinder-Oaxaca Decomposition in R.")
+  packageStartupMessage(" R package version 0.1.5. https://CRAN.R-project.org/package=oaxaca \n")
 }
 
 .is.wholenumber <- function(x, tol = .Machine$double.eps^0.5)  {
@@ -135,7 +135,7 @@ function(formula, data, group.weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
     d <- data
   
     # subset data set based on group variable; 
-    data.pooled <- d[(d[, group.var] == 0) || (d[, group.var] == 1), ]   # only retain observations where group.var is 0 or 1
+    data.pooled <- d[(d[, group.var] == 0) | (d[, group.var] == 1), ]   # only retain observations where group.var is 0 or 1
     data.A <- data.pooled[d[, group.var] == 0,]    
     data.B <- data.pooled[d[, group.var] == 1,]   
     
@@ -352,7 +352,7 @@ function(formula, data, group.weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
       d <- data
       
       # subset data set based on group variable; 
-      data.pooled <- d[(d[, group.var] == 0) || (d[, group.var] == 1), ]   # only retain observations where group.var is 0 or 1
+      data.pooled <- d[(d[, group.var] == 0) | (d[, group.var] == 1), ]   # only retain observations where group.var is 0 or 1
       data.A <- data.pooled[d[, group.var] == 0,]    
       data.B <- data.pooled[d[, group.var] == 1,] 
       
@@ -416,7 +416,7 @@ function(formula, data, group.weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
         d <- data[indices[[r]], ]
           
         # subset data set based on group variable; 
-        data.pooled <- d[(d[, group.var] == 0) || (d[, group.var] == 1), ]   # only retain observations where group.var is 0 or 1
+        data.pooled <- d[(d[, group.var] == 0) | (d[, group.var] == 1), ]   # only retain observations where group.var is 0 or 1
         data.A <- data.pooled[d[, group.var] == 0,]    
         data.B <- data.pooled[d[, group.var] == 1,] 
           
@@ -949,6 +949,6 @@ function(formula, data, group.weights = NULL, R = 1000, reg.fun = lm, cl, ...) {
     p.facet_wrap +
     scale_x_discrete(limits=left.side.labels) + 
     theme_bw() +
-    guides(fill=FALSE)
+    guides(fill="none")
 
 }

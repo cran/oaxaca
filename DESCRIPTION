@@ -1,8 +1,8 @@
 Package: oaxaca
 Type: Package
 Title: Blinder-Oaxaca Decomposition
-Version: 0.1.4
-Date: 2018-01-01
+Version: 0.1.5
+Date: 2022-04-17
 Author: Marek Hlavac <mhlavac@alumni.princeton.edu>
 Maintainer: Marek Hlavac <mhlavac@alumni.princeton.edu>
 Description: An implementation of the Blinder-Oaxaca decomposition for linear regression models.
@@ -11,6 +11,6 @@ Imports: Formula, ggplot2, reshape2, methods, stats
 LazyData: yes
 Collate: 'oaxaca-internal.R' 'oaxaca.R'
 NeedsCompilation: no
-Packaged: 2017-12-29 20:37:00 UTC; Marek
+Packaged: 2022-04-17 18:59:04 UTC; marek
 Repository: CRAN
-Date/Publication: 2018-01-03 13:44:34 UTC
+Date/Publication: 2022-04-17 19:10:02 UTC

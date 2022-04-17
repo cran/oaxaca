@@ -41,12 +41,11 @@ Wickham, Hadley. (2009). ggplot2: Elegant Graphics for Data Analysis. Springer S
 \author{
 %%  ~~who you are~~
 Dr. Marek Hlavac   < mhlavac at alumni.princeton.edu > \cr
-Department of Economics, UWC Adriatic, Duino, Italy \cr
-Research Fellow, Central European Labour Studies Institute (CELSI), Bratislava, Slovakia \cr
+Social Policy Institute, Bratislava, Slovakia \cr
 }
 \section{Please cite as:}{
-Hlavac, Marek (2018). oaxaca: Blinder-Oaxaca Decomposition in R.\cr
-R package version 0.1.4. https://CRAN.R-project.org/package=oaxaca \cr
+Hlavac, Marek (2022). oaxaca: Blinder-Oaxaca Decomposition in R.\cr
+R package version 0.1.5. https://CRAN.R-project.org/package=oaxaca \cr
 }
 \seealso{
 \code{\link{oaxaca}}

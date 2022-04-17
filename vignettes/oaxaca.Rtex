@@ -6,7 +6,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% almost as usual
-\author{Marek Hlavac\\Department of Economics, UWC Adriatic, Duino (Trieste), Italy\\Central European Labour Studies Institute (CELSI), Bratislava, Slovakia}
+\author{Marek Hlavac\\Social Policy Institute, Bratislava, Slovakia}
 \title{\pkg{oaxaca}: Blinder-Oaxaca Decomposition in \proglang{R}}
 
 %% for pretty printing and a nice hypersummary also set:
@@ -34,12 +34,6 @@ This article introduces the \proglang{R} package \pkg{oaxaca} to perform the Bli
 %% The address of (at least) one author should be given
 %% in the following format:
 \Address{
-  Dr. Marek Hlavac\\
-  UWC Adriatic\\
-  via Trieste 29\\
-  Duino-Aurisina (TS), 34011\\
-  Italy\\
-  \\
   E-mail: \email{mhlavac@alumni.princeton.edu}\\
 }
 %% It is also possible to add a telephone and fax number
@@ -60,7 +54,7 @@ This article introduces the \proglang{R} package \pkg{oaxaca} to perform the Bli
 If you use the \pkg{oaxaca} package in your research, please do not forget to include a citation:
 
 \begin{itemize}
-\item Hlavac, Marek (2018). oaxaca: Blinder-Oaxaca Decomposition in R. R package version 0.1.4. https://CRAN.R-project.org/package=oaxaca
+\item Hlavac, Marek (2022). oaxaca: Blinder-Oaxaca Decomposition in R. R package version 0.1.5. https://CRAN.R-project.org/package=oaxaca
 \end{itemize}
 
 %% include your article here, just as usual

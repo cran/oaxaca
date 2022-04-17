@@ -3,6 +3,9 @@ oaxaca: Blinder-Oaxaca Decomposition in R - What's new?
 Please note that I am always looking for comments and suggestions. 
 Do not hesitate to contact me at mhlavac [at] alumni.princeton.edu
 
+v. 0.1.5:
+- fixed bug to achieve full compability with CRAN
+
 v. 0.1.4:
 - to prevent clashes with standard R functions, argument 'group.weights' (for function oaxaca) and 'group.weight' (for function plot.oaxaca) replaces 'weights' and 'weight', respectively
 - fixed issues with input checking that led data frames not to be accepted by the group.var argument
